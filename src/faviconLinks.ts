@@ -58,10 +58,20 @@ const DEFAULT_FAVICON_PROVIDER_PRECEDENCE = [FaviconProvider.GOOGLE];
  *
  * These were discovered manually and I'm mostly-confident they're correct.
  */
-const FaviconProviderDefault: {[key in FaviconProvider]: string} = {
-  [FaviconProvider.DUCKDUCKGO]: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACSElEQVRoQ+2avU7DMBCAfc7IC/QxYKc73XmBzrHMXma64zpzd8ReZspeHqAP0AeAMT50VVylIX9N7QRXRIoqNbF9n+/Hd3aAObiUUjcAcA0A9DtijNFddu0Qke4NIn5KKTfnDg9dOyChOecTxtgYAK669IOI34yxtTFm1RXmZIBM8CnNeBehq9qQRowxy1NBWgMkSTJCRAkAty4FL/aFiB8AoOI43rUZpxWAUmrMOZ91NZU2guTfIdMyxsyllOumto0AWmua9fumjnw8R8RXIYSq67sWQGtNs37nQ7i2fSLimxBiXvV+JcBfEN4KXQdRCjCk2dREqVJz+gVADhtF0VNbFff5Xpqmj0XHPgLIQuWyr2hzKjxFJwCY5kPsEYDWeu47zp8qdNk6IYSY2f8PALTCRlH0fO4A1B4Rt4yxra8Ilqbpg12xDwBaa+UiPSDhAUDGcfzlK5JR2iGEkDRZewBXs58X3mrSF4TVwh7AxSBlwvuEsGuDBVidG3maVkwXk1TMl4QQE3BlPpnz1i77riHIjGCxWEw551MX0advCKofwFX0Kai3F01QNIIkSV5qatjOiunJJ3YE8N5ZyoaGfUB4BejDJ7wD+Ib4B2jyH99+4FUDvoXfJ3PBh9HgF7LgU4ngk7msHgg3nb6IgsaVGQ1WUmZaCLeod1nYD7atkmkh3I0tAgh+azEzpXA3d3P7OIOdylRlt1WnNZd5wOFzR62pfig+b0rJL/uQz85G0MesFiLog+68XQb7qUHRuYL92KMsigz5uc0PwApGxRM8pM8AAAAASUVORK5CYII=",
-  [FaviconProvider.GOOGLE]: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACqklEQVQ4T2NkoBAwwvSHhq7ifPnrtYi1iZLp719/st9/+G7y8dMPHpA8Hy/HF0EBzjNs7CxTj565d1qcTfTN6tVh30FyYANAmr/8fi+loiae+uXrTz8VRWExOSUh4V+//zKwsTIzKMoJM+zefePtg0fvX/Hxsm26c+v1bB5WwWcgQ8AG2PlPldVXl87+9v1PlJaOmKyivDADNxcbg5GuDMPXb78Y5KX4GJ6//sZw+cYzhmXLzz7m42ZbdvH286mHNmY/BhtQ2bw96Nnzjy2pSZaar958AfuKlZUZTOtqSIIN+PuPgeHQqftgJ89fdPK6tJRATXut5zqwAcU1m/fycLPp15a5CW/afQ0lWJ1t1Bj4uFkYPn39w7D3yC0GJTkhhjXrLr79+v3Xxf5WP2ewAUk5qz4mJZjz6WpIgRXBAEwziA9ywc17bxhu3n3FICbCwzBn3olPC6aF84MNCI5b+LejyY9JRV6AYdfhOwwykgJgDLIZGew/cZ/hw8fvDCCLyms2/lu3JIEZbsDknhAmSVEusFNPnHsADkARAQ4MA0CBqqEszlBWs/HfepgBidkrPyYnWvBZG8vBNRw9+wjOVpITYQAZDgJvPvwAe2P23OOfFk6PgHgBFogNFW7CMF2wQIPxpSUFGMz0pMDciobtb3/9+nOxvx0aiBWN2wOfv/jYmppsqQlzBboBII1+rloMJ84/Ypg559h1aUmB6o56z/VICUky+9OXX1GpSZayMEPuPPwATjyQ9CDF8PLNJ4aZs489FuBlR01IiKQsmvrx808/GUl+MS8vbeHfv/8y3Hv0luHXr78Mj++/f/v42YdXAjzsm+7cQUvKsPwAykxWRkomP3/9znn//rvJp88/eP7//w/OTMJCXKe5OFimnDpz/yw/emZCiSsSOQBeSzog3zDfJwAAAABJRU5ErkJggg==",
-  [FaviconProvider.YANDEX]: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=",
+const FaviconProviderDefaults: {[key in FaviconProvider]: string[]} = {
+  [FaviconProvider.DUCKDUCKGO]:
+    [
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACSElEQVRoQ+2avU7DMBCAfc7IC/QxYKc73XmBzrHMXma64zpzd8ReZspeHqAP0AeAMT50VVylIX9N7QRXRIoqNbF9n+/Hd3aAObiUUjcAcA0A9DtijNFddu0Qke4NIn5KKTfnDg9dOyChOecTxtgYAK669IOI34yxtTFm1RXmZIBM8CnNeBehq9qQRowxy1NBWgMkSTJCRAkAty4FL/aFiB8AoOI43rUZpxWAUmrMOZ91NZU2guTfIdMyxsyllOumto0AWmua9fumjnw8R8RXIYSq67sWQGtNs37nQ7i2fSLimxBiXvV+JcBfEN4KXQdRCjCk2dREqVJz+gVADhtF0VNbFff5Xpqmj0XHPgLIQuWyr2hzKjxFJwCY5kPsEYDWeu47zp8qdNk6IYSY2f8PALTCRlH0fO4A1B4Rt4yxra8Ilqbpg12xDwBaa+UiPSDhAUDGcfzlK5JR2iGEkDRZewBXs58X3mrSF4TVwh7AxSBlwvuEsGuDBVidG3maVkwXk1TMl4QQE3BlPpnz1i77riHIjGCxWEw551MX0advCKofwFX0Kai3F01QNIIkSV5qatjOiunJJ3YE8N5ZyoaGfUB4BejDJ7wD+Ib4B2jyH99+4FUDvoXfJ3PBh9HgF7LgU4ngk7msHgg3nb6IgsaVGQ1WUmZaCLeod1nYD7atkmkh3I0tAgh+azEzpXA3d3P7OIOdylRlt1WnNZd5wOFzR62pfig+b0rJL/uQz85G0MesFiLog+68XQb7qUHRuYL92KMsigz5uc0PwApGxRM8pM8AAAAASUVORK5CYII=",
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACTklEQVRoQ+2aMVbDMAyGLWfkAj0G3WGHnQt0jp/ZYaY7rjN357HDTNnLAXqAHgDGWDz1xbw0JHGb2AnuI2ObOPos6bdkB5iHSyk1BYBzAJgyxiYAMKkbFhG3jLEtIq4R8UNKue77eug6ABnNOb9mjF0CwFmXcRDxizG2Msa8dIU5GqAwfEYz3sXopmfII8aY5bEgBwNkWTZBRAkAFz4Nr46FiO8AoNI0pXBzXgcBKKUuOed3XUPFaUXlBgotY8xcSrlyPesE0FrTrN+4BgrxPyI+CyFU29itAFprmvWrEMYdOiYivgoh5k33NwL8BeOt0W0QtQBjhk2LStWG0y8AStgkSR4OdfGQ9+V5fl9N7D2AQiqXQ6nNsfCkTgAwK0vsHoDWeh5a5481um6dEELc2d9/AGiFTZLkse8L6HlE3DDGNqEULM/zW7ti/wBorZWP8oCMBwCZpulnKCWjskMIIWmydgC+Zr9svPVkKAjrhR2Aj5fUGR8Swq4NFuClr/K4Vkwfk1TOT1IkIcQ1+AqfInlbl33fEBRGsFgsZpzzmQ/1GRqC+gfwpT4V9w7iCVIjAnhq6mH7eGWInKAeG7Ise+tjaNuzQ0AEBRgiJ4IDhIb4B3DlT+g8COqB0MbvirnoZTT6hSz6UiL6Yq7oB+Itp0+iofEVRqO1lIUX4m3qfTb2o22rFF6Id2OLAKLfWixCKd7N3dI+zminMk3VbdNpzWkecITcUXP1D9X/XSX5aR/y2dmI+pjVQkR90F2Oy2g/NagmV7Qfe9SpyJif23wD0plMvz+ygPIAAAAASUVORK5CYII=",
+    ],
+  [FaviconProvider.GOOGLE]:
+    [
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACqklEQVQ4T2NkoBAwwvSHhq7ifPnrtYi1iZLp719/st9/+G7y8dMPHpA8Hy/HF0EBzjNs7CxTj565d1qcTfTN6tVh30FyYANAmr/8fi+loiae+uXrTz8VRWExOSUh4V+//zKwsTIzKMoJM+zefePtg0fvX/Hxsm26c+v1bB5WwWcgQ8AG2PlPldVXl87+9v1PlJaOmKyivDADNxcbg5GuDMPXb78Y5KX4GJ6//sZw+cYzhmXLzz7m42ZbdvH286mHNmY/BhtQ2bw96Nnzjy2pSZaar958AfuKlZUZTOtqSIIN+PuPgeHQqftgJ89fdPK6tJRATXut5zqwAcU1m/fycLPp15a5CW/afQ0lWJ1t1Bj4uFkYPn39w7D3yC0GJTkhhjXrLr79+v3Xxf5WP2ewAUk5qz4mJZjz6WpIgRXBAEwziA9ywc17bxhu3n3FICbCwzBn3olPC6aF84MNCI5b+LejyY9JRV6AYdfhOwwykgJgDLIZGew/cZ/hw8fvDCCLyms2/lu3JIEZbsDknhAmSVEusFNPnHsADkARAQ4MA0CBqqEszlBWs/HfepgBidkrPyYnWvBZG8vBNRw9+wjOVpITYQAZDgJvPvwAe2P23OOfFk6PgHgBFogNFW7CMF2wQIPxpSUFGMz0pMDciobtb3/9+nOxvx0aiBWN2wOfv/jYmppsqQlzBboBII1+rloMJ84/Ypg559h1aUmB6o56z/VICUky+9OXX1GpSZayMEPuPPwATjyQ9CDF8PLNJ4aZs489FuBlR01IiKQsmvrx808/GUl+MS8vbeHfv/8y3Hv0luHXr78Mj++/f/v42YdXAjzsm+7cQUvKsPwAykxWRkomP3/9znn//rvJp88/eP7//w/OTMJCXKe5OFimnDpz/yw/emZCiSsSOQBeSzog3zDfJwAAAABJRU5ErkJggg==",
+    ],
+  [FaviconProvider.YANDEX]:
+    [
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=",
+    ],
 };
 
 /**
@@ -261,7 +271,7 @@ function setDataUrlForFavicon(
     debugLog(`Getting dataUrl for hostname "${hostname}" using provider "${provider}".`);
     testDataUrl(
       PROXY_URL + faviconUrl,
-      (dataUrl) => dataUrl !== FaviconProviderDefault[provider],
+      (dataUrl) => !FaviconProviderDefaults[provider].includes(dataUrl),
       (dataUrl) => {
         debugLog(`Found dataUrl for hostname "${hostname}" using provider "${provider}"!`);
         addBackgroundImageRule(stylesheet, hostname, dataUrl);
