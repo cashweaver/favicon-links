@@ -12,6 +12,8 @@
  *  - [data-fallback-dataurl]: DataUrl to use when no favicon can be found.
  *  - [data-include-internal-links]: Whether or not to add favicons to internal
  *      links.
+ *  - [data-favicon-provider-precedence]: Comma separated string of values from
+ *      FaviconProviders enum.
  */
 
 /**
@@ -46,6 +48,11 @@ enum FaviconProvider {
 }
 
 /**
+ * The default favicon provider precedence.
+ */
+const DEFAULT_FAVICON_PROVIDER_PRECEDENCE = [FaviconProvider.GOOGLE];
+
+/**
  * The "null" value returned by favicon provider services when theycannot find
  * the favicon.
  *
@@ -76,6 +83,10 @@ function initialize(): void {
 
     const fallbackDataUrl = scriptElement.getAttribute('data-fallback-dataurl');
     const shouldIncludeInternalLinks = scriptElement.hasAttribute('data-include-internal-links');
+    const providerPrecedence = parseFaviconProviderPrecedence(
+      scriptElement.getAttribute('data-favicon-provider-precedence'),
+      DEFAULT_FAVICON_PROVIDER_PRECEDENCE,
+    );
 
     setFavicons(selector, !shouldIncludeInternalLinks);
 
@@ -114,17 +125,43 @@ function initialize(): void {
       setDataUrlForFavicon(
         hostname,
         stylesheet,
-        [
-          FaviconProvider.DUCKDUCKGO,
-          FaviconProvider.GOOGLE,
-          FaviconProvider.YANDEX,
-        ],
+        providerPrecedence,
         () => {},
         THROTTLE_MS,
         fallbackDataUrl,
       );
     });
   });
+}
+
+/**
+ * Parse the precedence of favicon providers.
+ *
+ * Allows for repeated values because doing so is easier than not. Users should
+ * ensure their provided list doesn't include repeats.
+ */
+function parseFaviconProviderPrecedence(
+  providers: string|null,
+  defaultPrecedence: FaviconProvider[],
+): FaviconProvider[] {
+  if (!providers) {
+    return defaultPrecedence;
+  }
+
+  return providers.split(',').reduce((
+      providers: FaviconProvider[],
+      provider: string,
+    ) => {
+      if (provider === 'duckduckgo') {
+        return [...providers, FaviconProvider.DUCKDUCKGO];
+      } else if (provider === 'google') {
+        return [...providers, FaviconProvider.GOOGLE];
+      } else if (provider === 'yandex') {
+        return [...providers, FaviconProvider.YANDEX];
+      }
+
+      return providers;
+    }, []);
 }
 
 /**
