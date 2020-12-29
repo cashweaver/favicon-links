@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
+        "downlevelIteration": true,
         "noImplicitAny": true,
         "outDir": "dist",
+        "lib": ["ES2015", "DOM"],
         "preserveConstEnums": true,
         "removeComments": true,
         "sourceMap": true,

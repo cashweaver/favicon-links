@@ -5,7 +5,21 @@
  *  - Petko Yotov (extlink-favicons.js), pmwiki.org/petko
  *
  * In one big 'ol file for simplicity.
+ *
+ * Script tag attributes:
+ *  - id: must match SCRIPT_ID below.
+ *  - data-selector: query selector for all link candidates.
+ *  - [data-fallback-dataurl]: DataUrl to use when no favicon can be found.
+ *  - [data-include-internal-links]: Whether or not to add favicons to internal
+ *      links.
  */
+
+/**
+ * Whether or not to enable debug logging.
+ */
+const DEBUG_LOGGING = false;
+const debugLog = (s: string) => DEBUG_LOGGING && console.log('FaviconLinks DEBUG:', s);
+const errorLog = (s: string) => console.error('FaviconLinks ERROR:', s);
 
 /**
  * The expected ID of the script tag providing this script.
@@ -50,17 +64,20 @@ function initialize(): void {
   document.addEventListener('DOMContentLoaded', () => {
     const scriptElement = document.getElementById(SCRIPT_ID);
     if (!scriptElement) {
-      console.error(`FaviconLinks ERROR: Could not find script tag. Please add \`id="${SCRIPT_ID}"\` to the script element.`);
+      errorLog(`FaviconLinks ERROR: Could not find script tag. Please add \`id="${SCRIPT_ID}"\` to the script element.`);
       return;
     }
 
     const selector = scriptElement.getAttribute('data-selector');
     if (!selector) {
-      console.error(`FaviconLinks ERROR: Could not find selector. Please add \`data-selector="<your selector>"\` to the script element.`);
+      errorLog(`FaviconLinks ERROR: Could not find selector. Please add \`data-selector="<your selector>"\` to the script element.`);
       return;
     }
 
-    setFavicons(selector);
+    const fallbackDataUrl = scriptElement.getAttribute('data-fallback-dataurl');
+    const shouldIncludeInternalLinks = scriptElement.hasAttribute('data-include-internal-links');
+
+    setFavicons(selector, !shouldIncludeInternalLinks);
 
     const stylesheet = (() => {
       const style = document.createElement("style");
@@ -81,12 +98,19 @@ function initialize(): void {
         + 'vertical-align: middle;'
         + 'width: 16px;'
         + '}', 0);
+      debugLog('Favicons are visible');
     };
+    setFaviconsVisible();
 
-    const faviconLinks = document.querySelectorAll(`${selector}[data-favicon]`);
+    const allHostnames = Array.prototype.slice.call(
+        document.querySelectorAll(`${selector}[data-favicon]`)
+      )
+      .map((linkElement: Element) => {
+        return (linkElement as HTMLAnchorElement).hostname;
+      });
+    const uniqueHostnames = [...new Set(allHostnames)];
     let numComplete = 0;
-    faviconLinks.forEach((linkElement: Element) => {
-      const hostname = (linkElement as HTMLAnchorElement).hostname;
+    uniqueHostnames.forEach((hostname: string) => {
       setDataUrlForFavicon(
         hostname,
         stylesheet,
@@ -95,13 +119,9 @@ function initialize(): void {
           FaviconProvider.GOOGLE,
           FaviconProvider.YANDEX,
         ],
-        () => {
-          numComplete += 1;
-          if (numComplete === faviconLinks.length) {
-            setFaviconsVisible();
-          }
-        },
+        () => {},
         THROTTLE_MS,
+        fallbackDataUrl,
       );
     });
   });
@@ -112,11 +132,10 @@ function initialize(): void {
  */
 function setFavicons(
   selector: string,
-  externalOnly = true
+  externalOnly = true,
 ): void {
   Array.prototype.slice.call(document.querySelectorAll(selector))
     .filter((linkElement: Element) => {
-      // (Optional) Remove non-external links.
       const hostname = (linkElement as HTMLAnchorElement).hostname;
       return !(externalOnly && hostname === location.hostname);
     })
@@ -130,10 +149,21 @@ function setFavicons(
 /**
  * Sets the favicon url for the provided link element.
  */
-function setFavicon(
-  linkElement: HTMLAnchorElement,
-): void {
+function setFavicon(linkElement: HTMLAnchorElement): void {
   linkElement.setAttribute('data-favicon', linkElement.hostname);
+}
+
+/**
+ * Adds a CSS background-image rule for the provided hostname.
+ */
+function addBackgroundImageRule(
+  stylesheet: CSSStyleSheet,
+  hostname: string,
+  dataUrl: string,
+) {
+  stylesheet.insertRule(`a[data-favicon="${hostname}"]::after {`
+    + `background-image: url("${dataUrl}");`
+    + `}`, 0);
 }
 
 /**
@@ -145,6 +175,7 @@ function setDataUrlForFavicon(
     providerPrecedence: FaviconProvider[] = [],
     onComplete = () => {},
     throttleMs = 0,
+    fallbackDataUrl: string|null = null,
 ): void {
   if (!providerPrecedence.length) {
     return;
@@ -175,6 +206,10 @@ function setDataUrlForFavicon(
    */
   const inner = (providerIndex: number) => {
     if (providerIndex >= providerPrecedence.length) {
+      debugLog(`Failed to find a non-default dataUrl for hostname "${hostname}"`);
+      if (fallbackDataUrl) {
+        addBackgroundImageRule(stylesheet, hostname, fallbackDataUrl);
+      }
       onComplete();
       return;
     }
@@ -182,20 +217,21 @@ function setDataUrlForFavicon(
     const provider = providerPrecedence[providerIndex];
     let faviconUrl = getFaviconUrl(hostname, provider);
     if (!faviconUrl) {
-      console.error(`FaviconLinks ERROR: No favicon URL found for hostname "${hostname}" and provider "${provider}".`);
+      errorLog(`FaviconLinks ERROR: No favicon URL found for hostname "${hostname}" and provider "${provider}".`);
       return;
     }
 
+    debugLog(`Getting dataUrl for hostname "${hostname}" using provider "${provider}".`);
     testDataUrl(
       PROXY_URL + faviconUrl,
       (dataUrl) => dataUrl !== FaviconProviderDefault[provider],
       (dataUrl) => {
-        stylesheet.insertRule(`a[data-favicon="${hostname}"]::after {`
-          + `background-image: url("${dataUrl}");`
-          + `}`, 0);
+        debugLog(`Found dataUrl for hostname "${hostname}" using provider "${provider}"!`);
+        addBackgroundImageRule(stylesheet, hostname, dataUrl);
         onComplete();
       },
       (dataUrl) => {
+        debugLog(`Didn't find dataUrl for hostname "${hostname}" using provider "${provider}".`);
         inner(providerIndex + 1);
       },
     );
